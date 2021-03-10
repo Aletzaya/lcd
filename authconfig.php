@@ -33,7 +33,7 @@ $logout = "http://" . $_SERVER['HTTP_HOST'] . "/lcd/logout.php"; // Path to logo
 
 $dbhost = "localhost";	// Change this to the proper DB Host name
 
-$dbusername = "Admon"; 	// Change this to the proper DB User
+$dbusername = "app_user"; 	// Change this to the proper DB User
 
 $dbpass = "det15a";	// Change this to the proper DB User password
 

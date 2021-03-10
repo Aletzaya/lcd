@@ -19,7 +19,7 @@ class auth {
         $username = strtoupper($username);
 
         $query = "SELECT * FROM authuser WHERE uname='$username' AND passwd=MD5('$password') AND status <> 'inactive'";
-
+        
         $UpdateRecords = "UPDATE authuser SET lastlogin = NOW(), logincount = logincount + 1 WHERE uname='$username'";
 
 
