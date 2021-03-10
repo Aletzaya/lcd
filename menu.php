@@ -12,7 +12,7 @@ require("lib/lib.php");
 include_once ("auth.php");
 include_once ("authconfig.php");
 include_once ("check.php");
-
+require ("config.php");
 if (isset($_REQUEST[busca])) {  // Si trae algo entra y asigna los valores a session;
     $_SESSION['cVar']   = $_REQUEST[busca];    
 }
@@ -50,7 +50,7 @@ if($_SESSION['cVarVal']=='Ini'){
     //   echo "Vlor de session :  $check['status']  ";
 */
 
-  require ("config.php");							//Parametros de colores;
+  							//Parametros de colores;
 
    //<p align="center"><img src="images/logo1.jpg" width="400" height="200"></p>
 
