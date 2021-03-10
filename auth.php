@@ -57,7 +57,7 @@ class auth {
 
         $Upinto = $link->query("INSERT INTO logacceso (id,uname,team,level,fechacc,ipacc) VALUES ('$accesso[id]','$accesso[uname]','$accesso[team]','$accesso[level]',NOW(),'$ipaddress')");
 
-        $numrows = $result->num_rows();
+        $numrows = $result->num_rows;
 
         $row = $result->fetch_assoc();
 
