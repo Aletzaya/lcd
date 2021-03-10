@@ -1,0 +1,533 @@
+<?php
+
+  session_start();
+
+  include_once ("auth.php");
+  include_once ("authconfig.php");
+  include_once ("check.php");
+
+  require("lib/kaplib.php");
+  require ("config.php");
+  date_default_timezone_set("America/Mexico_City");
+  $link		=	conectarse();
+
+  $tamPag	=	15;
+
+  $Usr		=	$check['uname'];
+  $Depto	=	$_REQUEST[Depto];
+  $busca	=	$_REQUEST[busca];
+  $pagina	=	$_REQUEST[pagina];
+  $cId       = $_REQUEST[busca]; 
+
+  $estudio	=	$_REQUEST[estudio];
+  $archivo = $_REQUEST[archivo];  
+  $lBd       = false;
+  
+if($archivo<>''){
+	$id   = $_REQUEST[id];
+	unlink("estudios/$archivo");
+	$Usrelim    = $_COOKIE['USERNAME'];
+    $Fechaelim  = date("Y-m-d H:i:s");
+    $lUp = mysql_query("UPDATE estudiospdf set usrelim='$Usrelim',fechaelim='$Fechaelim' where archivo='$archivo' and id='$id'");
+}
+
+if($busca == $cId){$lBd = true;}
+
+if($busca <> $cId){ $busca = $cId;}
+  
+  require("fileupload-class.php");
+
+$path = "estudios/";
+
+$upload_file_name = "userfile";
+	
+	
+// En este caso acepta todo, pero podemos filtrar que tipos de archivos queremos
+$acceptable_file_types = "";
+
+
+// Si no se le da una extension pone por default: ".jpg" or ".txt"
+$default_extension = "";
+
+// MODO: Si se intenta subir un archivo con el mismo nombre a:
+
+// $path directory
+
+
+// HAY OPCIONES:
+//   1 = modo de sobreescritura
+//   2 = crea un nuevo archivo con extension incremental
+//   3 = no hace nada si existe (mayor proteccion)
+
+$mode = 2;
+
+
+if (isset($_REQUEST['submitted']) AND $lBd ) {
+
+    // Crea un nueva instancia de clase
+    $my_uploader = new uploader($_POST['language']);
+
+    // OPCIONAL: Tamano maxino de archivos en bytes
+    $my_uploader->max_filesize(3000000);
+    //$my_uploader->max_filesize(4194304);
+
+    // OPCIONAL: Si se suben imagenes puedes poner el ancho y el alto en pixeles 
+    $my_uploader->max_image_size(2500, 2500); // max_image_size($width, $height)
+    // Sube el archivo
+
+    if ($my_uploader->upload($upload_file_name, $acceptable_file_types, $default_extension)) {
+
+        $my_uploader->save_file($path, $mode);
+    }
+
+    if ($my_uploader->error) {
+        echo $my_uploader->error . "<br><br>\n";
+    } else {
+        
+        // Imprime el contenido del array (donde se almacenan los datos del archivo)...
+        //print_r($my_uploader->file);
+
+        $cNombreFile    = $my_uploader->file['name'];
+        $Size           = $my_uploader->file['size'];
+        $NombreOri      = $my_uploader->file['raw_name'];
+        $Usr2    = $_COOKIE['USERNAME'];
+       $Fechasub  = date("Y-m-d H:i:s");
+
+        $lUp = mysql_query("INSERT INTO estudiospdf (id,archivo,usr,fechasub) VALUES ('$busca','$cNombreFile','$Usr2','$Fechasub')");
+
+        /*
+          $fp = fopen($path . $my_uploader->file['name'], "r");
+
+          while(!feof($fp)) {
+
+          $line = fgets($fp, 255);
+
+          echo $line;
+
+          }
+
+          if ($fp) { fclose($fp); }
+
+          }
+         */
+    }
+}
+
+  if($_REQUEST[Boton] == "Aceptar" OR $_REQUEST[Boton] == "Aplicar" ){  //Guarda el Movto de Notas
+
+     $Fecha = date("Y-m-d");
+     $Hora  = date("H:i");
+
+     $lUp  = mysql_query("UPDATE otd SET texto = '$_REQUEST[Texto]',status='TERMINADA', letra = '$_REQUEST[Letra]',
+     		 medico = '$_REQUEST[Medico]',tres = '$Fecha $Hora', lugar='4', fechaest = '$Fecha $Hora', statustom = 'TOMA/REALIZ',capturo='$Usr'
+     		 WHERE orden='$busca' AND estudio='$estudio' limit 1");
+			 
+	   $NumA1  = mysql_query("SELECT otd.estudio 
+	   FROM otd 
+	   WHERE otd.orden='$busca' AND otd.statustom='PENDIENTE'");
+	   
+	   $NumA2  = mysql_query("SELECT otd.estudio 
+	   FROM otd 
+	   WHERE otd.orden='$busca' AND otd.statustom=''");
+
+	 if(mysql_num_rows($NumA1)==0 and mysql_num_rows($NumA2)==0){
+			  $lUp = mysql_query("UPDATE ot SET realizacion='Si' WHERE orden='$busca'");
+	 }else{ 
+	 	if(mysql_num_rows($NumA1)>=1){
+			  $lUp = mysql_query("UPDATE ot SET realizacion='PD' WHERE orden='$busca'");
+		}else{ 
+			  $lUp = mysql_query("UPDATE ot SET realizacion='No' WHERE orden='$busca'");
+		}
+	 } 
+	 
+		  $NumA  = mysql_query("SELECT otd.estudio 
+		   FROM otd 
+		   WHERE otd.orden='$busca' AND otd.capturo=''");
+
+	 if(mysql_num_rows($NumA)==0){
+			  $lUp = mysql_query("UPDATE ot SET captura='Si' WHERE orden='$busca'");
+	 } 
+
+
+	 if($_REQUEST[Boton] == 'Aceptar'){
+
+        echo "<script language='javascript'>setTimeout('self.close();',100)</script>";
+
+     }
+
+  }
+  
+    if($_REQUEST[Boton2] == "Aceptar" OR $_REQUEST[Boton2] == "Aplicar" ){  //Guarda el Movto de Notas
+
+     $Fecha = date("Y-m-d");
+     $Hora  = date("H:i");
+
+     $lUp  = mysql_query("UPDATE otd SET texto2 = '$_REQUEST[Texto2]'
+     		 WHERE orden='$busca' AND estudio='$estudio' limit 1");
+
+	 if($_REQUEST[Boton] == 'Aceptar'){
+
+        echo "<script language='javascript'>setTimeout('self.close();',100)</script>";
+
+     }
+
+  }
+
+
+  $Tabla	= "ot";
+
+  $Titulo	= "Estudio por departamento";
+
+  $EstA		= mysql_query("SELECT descripcion,proceso,formato,respradiologia,dobleinterpreta FROM est WHERE estudio='$estudio'");
+
+  $Est		= mysql_fetch_array($EstA);
+
+  $OtA		= mysql_query("SELECT ot.fecha,ot.hora,ot.fechae,ot.servicio,ot.cliente,ot.medico,ot.diagmedico,ot.observaciones,
+  			  inst.nombre,cli.sexo,cli.nombrec,cli.fechan,med.nombrec as nombremed,otd.texto,otd.letra,
+  			  otd.medico as medicores,otd.texto2
+   			  FROM ot,inst,cli,med,otd
+      	      WHERE  ot.orden='$busca' AND ot.cliente=cli.cliente AND ot.institucion = inst.institucion AND ot.medico=med.medico
+  			  AND otd.orden=ot.orden AND otd.estudio='$estudio'");
+
+  $Ot		= mysql_fetch_array($OtA);
+
+  $lAg		= $Nombre<>$Cpo[nombre];
+
+  $Fecha	= date("Y-m-d");
+
+  require ("config.php");
+
+?>
+
+<html>
+<head>
+<title><?php echo $Titulo;?></title>
+</head>
+<body bgcolor="#FFFFFF">
+<script language="JavaScript1.2">
+function cFocus(){
+  document.form1.Nombre.focus();
+}
+
+function Mayusculas(cCampo){
+if (cCampo=='Nombre'){document.form1.Nombre.value=document.form1.Nombre.value.toUpperCase();}
+}
+function WinRes(url){
+   window.open(url,"WinRes","scrollbars=yes,status=no,tollbar=no,menubar=no,resizable=yes,width=900,height=500,left=30,top=80")
+}
+
+function elegir() {
+ if (confirm('se borran los datos')) {
+ alert('borrar');
+ } else {
+ alert('no se borra nada');
+ }
+ }
+
+</script>
+
+    <table align='center' border='2' width='50%' cellspacing= '3' cellpading = '0'><tr><td background='lib/bar.jpg' align='center'><font size='2' face='verdana' color='#6D6D6D'><?php echo "[ $estudio - $Est[descripcion] ]"; ?></font></td></tr></table>
+
+    <div align='center'><font size='2' face='verdana' color='#6D6D6D'>
+     <font color="#0066FF" size="2" >No.Orden : <?php echo $busca;?></font> &nbsp;
+     <font color='#0066FF' size='2' >Fecha: </font>&nbsp;<?php echo $Ot[fecha];?> &nbsp;
+     <font color='#0066FF' size='2'>Hora :</FONT> &nbsp;<?php echo $Ot[hora];?> &nbsp;
+     <font color='#0066FF' size='2'>Fec/Ent :</FONT>&nbsp; <?php echo $Ot[fechae]?> &nbsp;
+     <font color='#0066FF' size='2'>Tpo/servicio :</FONT><?php echo $Ot[servicio];?>
+     </div><p align='center'>
+     <font color='#0066FF' size='2' >Paciente : </FONT><?php echo $Ot[cliente]." - ".substr($Ot[nombrec],0,17);?>&nbsp;&nbsp;&nbsp;&nbsp;
+     <font color='#0066FF' size='2'>Inst.:</FONT> <?php echo $Ot[nombre];?> &nbsp; &nbsp;
+     <font color='#0066FF' size='2'>Med.: </FONT> <?php echo $Ot[medico]." - ".substr($Ot[nombremed],0,15);?>
+     </p>
+     <div align='center'>
+     <font color='#0066FF' size='2' >Sexo : </FONT><?php echo $Ot[sexo];?> &nbsp; &nbsp;
+     <font color='#0066FF' size='2'>Edad :</FONT> <?php echo $Fecha-$Ot[fechan]; ?>
+     A&ntilde;os </div>
+
+
+<table border='1' align='center' width='90%' border='1' cellpadding='1' cellspacing='0' >
+
+  <tr>
+    <td><font face='verdana' color='#0066FF' size='2' >Diagnostico medico: </font></td>
+    <td><?php echo $Ot[diagmedico];?> &nbsp; </td>
+  </tr><tr>
+    <td><font face='verdana' color='#0066FF' size='2' >Observaciones: </font></td>
+    <td><?php echo $Ot[observaciones]; ?> &nbsp; </td>
+   </tr>
+</table>
+
+<br><br>
+
+<?php
+
+echo "<table align='center' width='50%' border='2' cellspacing= '3' cellpading = '0'><tr><td background='lib/bar.jpg' align='center'><font size='2' face='verdana' color='#6D6D6D' >Pre-analiticos</font></td></tr></table>";
+
+$OtpreA = mysql_query("SELECT cue.pregunta,otpre.nota,cue.id,cue.tipo
+          FROM otpre,cue
+          WHERE otpre.orden='$busca' AND otpre.estudio='$estudio' AND cue.id=otpre.pregunta",$link);
+
+    echo "<table align='center' width='100%'>";
+    echo "<tr><td align='right'>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>";
+    $Sec=1;
+    while($registro=mysql_fetch_array($OtpreA)){
+ 		echo "<tr><td align='right'>$Gfont $registro[0] $Gfon </td><td>&nbsp;</td>";
+        echo "<td>";
+        $Campo="Nota".ltrim($Sec);
+     	  if($registro[3]=="Si/No"){
+   	          echo "<select name='$Campo'>";
+                echo "<option value='Si'>Si</option>";
+                echo "<option value='No'>No</option>";
+                echo "<option selected>$registro[1]</option>";
+                echo "</select>";
+        }elseif($registro[3]=="Fecha"){
+   	          echo "<input name='$Campo' value ='$registro[1]' type='text' size='8' >";
+        }else{
+   	          echo "<input name='$Campo' value ='$registro[1]' type='text' size='80' >";
+                //echo "<TEXTAREA NAME='$Campo' cols='50' rows='3' >$registro[1]</TEXTAREA>";
+        }
+   	  $Sec=$Sec+1;
+   	  echo "</td></tr>";
+    }
+    echo "</table>";
+    echo "<input type='hidden' name='estudio' value=$estudio>";
+    echo "<input type='hidden' name='Depto' value=$Depto>";
+    echo "<input type='hidden' name='op' value=pr>";
+
+    //echo Botones();
+
+    echo "</form><br>";
+
+    echo "<table align='center' width='50%' border='2' cellspacing= '3' cellpading = '0'>";
+    echo "<tr><td background='lib/bar.jpg' align='center'>";
+    echo "<font size='2' face='verdana' color='#6D6D6D'>Resultados</font></td></tr></table><br>";
+
+    echo "<form name='form3' method='get' action='capturaresword.php'>";
+
+          if($Ot[texto]==''){
+             //$Formato = $Est[formato];
+             $Formato = $Est[respradiologia];
+          }else{
+             $Formato = $Ot[texto];
+          }
+
+          echo "<textarea name='Texto' rows='20' cols='80' style='width: 100%'>";
+          echo $Formato;
+          echo "</textarea>";
+
+
+          echo "<input type='hidden' name='estudio' value=$estudio>";
+          echo "<input type='hidden' name='Depto' value=$Depto>";
+
+          echo "<input type='hidden' name='op' value='gu'>"; // Resultdos
+
+		  echo "<div>";
+
+		  echo "Tama&ntilde;o de letra:";
+
+   	      echo "<select name='Letra'>";
+          echo "<option value='7'>7</option>";
+          echo "<option value='8'>8</option>";
+          echo "<option value='9'>9</option>";
+          echo "<option value='10'>10</option>";
+          echo "<option value='11'>11</option>";
+          echo "<option value='12'>12</option>";
+          echo "<option value='$Ot[letra]' selected>$Ot[letra]</option>";
+          echo "</select> &nbsp; Medico firmante: ";
+
+		  $MedA = mysql_query("SELECT nombre,id
+          		  FROM medi
+                  ");
+          echo "<select name='Medico'>";
+          while($Med = mysql_fetch_array($MedA)){
+                echo "<option value='$Med[id]'>$Med[nombre]</option>";
+	            if($Ot[medicores] == $Med[id]){
+	              $Dsp1 = $Med[nombre];
+	            }
+          }
+          echo "<option selected='$Ot[medicores]'>$Dsp1</option>";
+          echo "</select> &nbsp; ";
+
+
+		  echo "<input type='submit' style='background:#aad9aa; color:#ffffff;font-weight:bold;' name='Boton' value='Aceptar'>";
+
+		  echo "&nbsp; &nbsp; &nbsp; &nbsp;";
+
+		  echo "<input type='submit' style='background:#aad9aa; color:#ffffff;font-weight:bold;' name='Boton' value='Aplicar'>";
+
+		  echo "&nbsp; &nbsp; &nbsp; &nbsp;";
+
+		  echo " &nbsp; <a href=javascript:wingral('pdfradiologia.php?busca=$busca&Estudio=$estudio')><img src='lib/Pdf.gif' title='Vista preliminar' border='0' ></a> &nbsp; ";
+
+		  echo " &nbsp; <img src='lib/print.png' alt='Imprimir' border='0' onClick='window.print()'> &nbsp; ";
+
+		  echo "<input type='hidden' name='pagina' value=$pagina >";
+
+		  echo "<input type='hidden' name='busca' value=$busca >";
+
+		 echo "</div>";
+
+    echo "</form>";
+	
+   if($Est[dobleinterpreta]=='S'){
+		echo "<table align='center' width='50%' border='2' cellspacing= '3' cellpading = '0'>";
+		echo "<tr><td background='lib/bar.jpg' align='center'>";
+		echo "<font size='2' face='verdana' color='#6D6D6D'>Siguiente Interpretacion</font></td></tr></table><br>";
+	
+		echo "<form name='form4' method='get' action='capturaresword.php'>";
+	
+			  if($Ot[texto2]==''){
+				 //$Formato = $Est[formato];
+				 $Formato2 = $Est[respradiologia];
+			  }else{
+				 $Formato2 = $Ot[texto2];
+			  }
+	
+			  echo "<textarea name='Texto2' rows='20' cols='80' style='width: 100%'>";
+			  echo $Formato2;
+			  echo "</textarea>";
+	
+	
+			  echo "<input type='hidden' name='estudio' value=$estudio>";
+			  echo "<input type='hidden' name='Depto' value=$Depto>";
+	
+			  echo "<input type='hidden' name='op' value='gu'>"; // Resultdos
+	
+			  echo "<div>";
+	
+			  echo "Tama&ntilde;o de letra:";
+	
+			  echo "<select name='Letra'>";
+			  echo "<option value='7'>7</option>";
+			  echo "<option value='8'>8</option>";
+			  echo "<option value='9'>9</option>";
+			  echo "<option value='10'>10</option>";
+			  echo "<option value='11'>11</option>";
+			  echo "<option value='12'>12</option>";
+			  echo "<option value='$Ot[letra]' selected>$Ot[letra]</option>";
+			  echo "</select> &nbsp; Medico firmante: ";
+	
+			  $MedA = mysql_query("SELECT nombre,id
+					  FROM medi
+					  ");
+			  echo "<select name='Medico'>";
+			  while($Med = mysql_fetch_array($MedA)){
+					echo "<option value='$Med[id]'>$Med[nombre]</option>";
+					if($Ot[medicores] == $Med[id]){
+					  $Dsp1 = $Med[nombre];
+					}
+			  }
+			  echo "<option selected='$Ot[medicores]'>$Dsp1</option>";
+			  echo "</select> &nbsp; ";
+	
+	
+			  echo "<input type='submit' style='background:#aad9aa; color:#ffffff;font-weight:bold;' name='Boton2' value='Aceptar'>";
+	
+			  echo "&nbsp; &nbsp; &nbsp; &nbsp;";
+	
+			  echo "<input type='submit' style='background:#aad9aa; color:#ffffff;font-weight:bold;' name='Boton2' value='Aplicar'>";
+	
+			  echo "&nbsp; &nbsp; &nbsp; &nbsp;";
+	
+			  echo " &nbsp; <a href=javascript:wingral('pdfradiologia2.php?busca=$busca&Estudio=$estudio')><img src='lib/Pdf.gif' title='Vista preliminar' border='0' ></a> &nbsp; ";
+	
+			  echo " &nbsp; <img src='lib/print.png' alt='Imprimir' border='0' onClick='window.print()'> &nbsp; ";
+	
+			  echo "<input type='hidden' name='pagina' value=$pagina >";
+	
+			  echo "<input type='hidden' name='busca' value=$busca >";
+	
+			 echo "</div>";
+	
+		echo "</form>";
+   }
+	                    echo "<form enctype='multipart/form-data' action='capturaresword.php?busca=$busca&estudio=$estudio' method='POST'>";
+         
+                        echo "<input type='hidden' name='submitted' value='true'>";		
+
+                        echo "<input class='content_txt' name='" . $upload_file_name ."' type='file'> &nbsp; ";
+		
+                        echo "<input class='content_txt' type='submit' value='Subir archivo'>";
+                        echo "<input type='hidden' name='cId' value='$cId'> &nbsp; &nbsp; ";
+                        
+                        echo "</form>";
+						
+                    echo "<div align='left'><a href=javascript:winuni('displayestudioslcd.php?busca=$busca')><img src='lib/desplegar.png'></a> &nbsp; &nbsp; &nbsp; ";   
+					echo "<div>&nbsp; &nbsp; &nbsp; ";   
+                        
+                    $ImgA = mysql_query("SELECT * FROM estudiospdf WHERE id='$busca' and usrelim=''");
+                    while ($row = mysql_fetch_array($ImgA)) {              
+                        $Pdf = $row[archivo];  
+                        echo "<a href=javascript:winuni('enviafile2.php?busca=$Pdf')><img src='lib/Pdf.gif' title=$Pdf border='0'></a> &nbsp; &nbsp; ";                
+                    } 
+                    echo "</div>";
+					
+					echo "<div>&nbsp; &nbsp; &nbsp; ";   
+                         
+                    $ImgA = mysql_query("SELECT * FROM estudiospdf WHERE id='$busca' and usrelim=''");
+                    while ($row = mysql_fetch_array($ImgA)) {  
+                        $Pdf = $row[archivo];  
+                        //echo "<a href=javascript:winuni('enviafile2.php?busca=$Pdf')><img src='lib/dele.png' title=Elimina_$Pdf border='0'></a> &nbsp; &nbsp; &nbsp;";                                
+		                //echo "<a class='pg' class='pg' href=javascript:wingral('borrar.php?archivo=$Pdf&id=$busca')><img src='lib/dele.png' title=Elimina_$Pdf border='0'></a> &nbsp; &nbsp; ";	                
+		                echo "<a href='capturaresword.php?archivo=$Pdf&id=$busca&busca=$busca&estudio=$estudio' onclick='return confirm(\"Desea eliminar el archivo?\")'>&nbsp;<img src='lib/dele.png' title=Elimina_$Pdf border='0'></a> &nbsp; &nbsp;";
+					} 
+                    echo "</div>";
+
+
+	echo "<div align='center'><b>Historial clinico</b></div>";
+
+	echo "<table align='center' width='95%' border='0' cellspacing='1' cellpadding='0'>";
+    echo "<tr height='25' background='lib/bartit.gif'>";
+    echo "<th>$Gfont No.orden</th>";
+    echo "<th>$Gfont Fecha</font></th>";
+    echo "<th>$Gfont Estudio</font></th>";
+    echo "<th>$Gfont Descripcion</font></th>";
+    echo "<th>$Gfont Resultado</font></th>";
+    echo "</tr>";
+
+    $OtdA = mysql_query("SELECT ot.orden, ot.fecha,otd.estudio,est.descripcion,est.depto,otd.alterno,otd.capturo
+			FROM ot,otd LEFT JOIN est ON otd.estudio=est.estudio
+			WHERE ot.cliente = '$Ot[cliente]' AND ot.orden=otd.orden");
+
+	while($reg=mysql_fetch_array($OtdA)){
+
+            if( ($nRng % 2) > 0 ){$Fdo='FFFFFF';}else{$Fdo=$Gfdogrid;}    //El resto de la division;
+
+            $clnk=strtolower($reg[estudio]);
+
+            echo "<tr bgcolor='$Fdo' onMouseOver=this.style.backgroundColor='$Gbarra';this.style.cursor='hand' onMouseOut=this.style.backgroundColor='$Fdo';>";
+            //echo "<td align='center'><a href='ordenesde.php?busca=$busca&Estudio=$registro[estudio]'><img src='lib/edit.png' alt='Modifica Registro' border='0'></td>";
+            echo "<td>$Gfont $reg[fecha]</font></td>";
+            echo "<td>$Gfont $reg[orden]</font></td>";
+            echo "<td>$Gfont $reg[estudio]</font></td>";
+            echo "<td>$Gfont $reg[descripcion]</font></td>";
+
+			if($reg[capturo]<>''){
+				if($reg[depto] <> 2 ){
+					 echo "<td align='center'><a class='pg' href=javascript:wingral('estdeptoimp.php?clnk=$clnk&Orden=$reg[orden]&Estudio=$reg[estudio]&Depto=TERMINADA&op=im&reimp=1&alterno=$reg[alterno]')><img src='lib/print.png' alt='Imprime resultados' border='0'></a></td>";
+				}else{
+					 echo "<td align='center'><a class='pg' href=javascript:wingral('pdfradiologia.php?busca=$reg[orden]&Estudio=$reg[estudio]')><img src='lib/print.png' alt='Imprime resultados' border='0'></a></td>";
+				}
+			}else{
+				echo "<td align='center'>-</td>";
+			}
+            echo "</tr>";
+            $nRng++;
+
+	}//fin while
+
+	echo "</table> <br>";
+
+    echo "</td>";
+
+    echo "</tr>";
+
+echo "</table>";
+
+echo "</body>";
+
+echo "</html>";
+
+
+mysql_close();
+
+?>
