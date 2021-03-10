@@ -52,7 +52,7 @@ class auth {
 
 
         $access1 = $link->query("SELECT * FROM authuser WHERE uname='$username'");
-        
+
         $accesso = $access1->fetch_assoc();
 
         $Upinto = $link->query("INSERT INTO logacceso (id,uname,team,level,fechacc,ipacc) VALUES ('$accesso[id]','$accesso[uname]','$accesso[team]','$accesso[level]',NOW(),'$ipaddress')");
@@ -64,9 +64,7 @@ class auth {
         $Fec = strtotime($Fecha);
 
         //$FecDias = strtotime("-30 days", $Fec);   //Le quito 15 dias
-
         //s$FecUlt = strtotime($row[feclave]);
-
         // CHECK IF THERE ARE RESULTS
         // Logic: If the number of rows of the resulting recordset is 0, that means that no
         // match was found. Meaning, wrong username-password combination.
@@ -89,7 +87,6 @@ class auth {
     }
 
 // End: function authenticate
-
     // PAGE CHECK
     // This function is the one used for every page that is to be secured. This is not the same one
     // used in the initial login screen
@@ -97,18 +94,16 @@ class auth {
     function page_check($username, $password) {
         // Cada k entra a la pagina entra a esta func.haber si existe en la b.datos
         $query = "SELECT * FROM authuser WHERE uname='$username' AND passwd=MD5('$password') AND status <> 'inactive'";
-
-        $connection = mysql_connect($this->HOST, $this->USERNAME, $this->PASSWORD);
-
-
-        $SelectedDB = mysql_select_db($this->DBNAME);
-
-        $result = mysql_query($query);
+        $link = new mysqli($this->HOST, $this->USERNAME, $this->PASSWORD, $this->DBNAME);
+        if ($link->connect_error) {
+            die("Error al conectarse a la BD $dbname: " . $mysqli->connect_error);
+        }
+        $result = $link->query($query);
 
 
-        $numrows = mysql_num_rows($result);
+        $numrows = $result->num_rows;
 
-        $row = mysql_fetch_array($result);
+        $row = $result->fetch_assoc();
 
 
 
@@ -126,7 +121,6 @@ class auth {
     }
 
 // End: function page_check
-
     // MODIFY USERS
 
     function modify_user($username, $password, $team, $level, $status, $msj) {
@@ -170,7 +164,6 @@ class auth {
     }
 
 // End: function modify_user
-
     // DELETE USERS
 
     function delete_user($username) {
@@ -190,23 +183,19 @@ class auth {
             return "User test cannot be deleted.";
         }
 
+        $link = new mysqli($this->HOST, $this->USERNAME, $this->PASSWORD, $this->DBNAME);
+        if ($link->connect_error) {
+            die("Error al conectarse a la BD $dbname: " . $mysqli->connect_error);
+        }
 
-
-        $connection = mysql_connect($this->HOST, $this->USERNAME, $this->PASSWORD);
-
-
-
-        $SelectedDB = mysql_select_db($this->DBNAME);
-
-        $result = mysql_query($qDelete);
+        $result = $link->query($qDelete);
 
 
 
-        return mysql_error();
+        return $result->error;
     }
 
 // End: function delete_user
-
     // ADD USERS
 
     function add_user($username, $password, $team, $level, $status, $msj) {
@@ -217,11 +206,10 @@ class auth {
 
 				  			   VALUES ('$username', MD5('$password'), '$team', '$level', '$status', '', 0, '$msj')";
 
-
-
-        $connection = mysql_connect($this->HOST, $this->USERNAME, $this->PASSWORD);
-
-
+        $link = new mysqli($this->HOST, $this->USERNAME, $this->PASSWORD, $this->DBNAME);
+        if ($link->connect_error) {
+            die("Error al conectarse a la BD $dbname: " . $mysqli->connect_error);
+        }
 
         // Check if all fields are filled up
 
@@ -239,17 +227,11 @@ class auth {
             return "blank level";
         }
 
-
-
-        // Check if user exists
-
-        $SelectedDB = mysql_select_db($this->DBNAME);
-
-        $user_exists = mysql_query($qUserExists);
+        $user_exists = $link->query($qUserExists);
 
 
 
-        if (mysql_num_rows($user_exists) > 0) {
+        if ($user_exists->num_rows > 0) {
 
             return "username exists";
         } else {
@@ -258,19 +240,17 @@ class auth {
             // OLD CODE - DO NOT REMOVE
             // $result = mysql_db_query($this->DBNAME, $qInsertUser);
             // REVISED CODE
+            //$SelectedDB = mysql_select_db($this->DBNAME);
 
-            $SelectedDB = mysql_select_db($this->DBNAME);
-
-            $result = mysql_query($qInsertUser);
-
+            $result = $link->query($qInsertUser);
 
 
-            return mysql_affected_rows();
+
+            return $result->affected_rows;
         }
     }
 
 // End: function add_user
-
     // *****************************************************************************************
     // ************************************** G R O U P S **************************************
     // *****************************************************************************************
@@ -285,10 +265,10 @@ class auth {
 				  			   VALUES ('$teamname', '$teamlead', '$status')";
 
 
-
-        $connection = mysql_connect($this->HOST, $this->USERNAME, $this->PASSWORD);
-
-
+        $link = new mysqli($this->HOST, $this->USERNAME, $this->PASSWORD, $this->DBNAME);
+        if ($link->connect_error) {
+            die("Error al conectarse a la BD $dbname: " . $mysqli->connect_error);
+        }
 
         // Check if all fields are filled up
 
@@ -297,20 +277,16 @@ class auth {
             return "blank team name";
         }
 
-
-
         // Check if group exists
         // OLD CODE - DO NOT REMOVE
         // $group_exists = mysql_db_query($this->DBNAME, $qGroupExists);
         // REVISED CODE
 
-        $SelectedDB = mysql_select_db($this->DBNAME);
-
-        $group_exists = mysql_query($qGroupExists);
+        $group_exists = $link->query($qGroupExists);
 
 
 
-        if (mysql_num_rows($group_exists) > 0) {
+        if ($group_exists->num_rows > 0) {
 
             return "group exists";
         } else {
@@ -319,19 +295,17 @@ class auth {
             // OLD CODE - DO NOT REMOVE
             // $result = mysql_db_query($this->DBNAME, $qInsertGroup);
             // REVISED CODE
+            //$SelectedDB = mysql_select_db($this->DBNAME);
 
-            $SelectedDB = mysql_select_db($this->DBNAME);
-
-            $result = mysql_query($qInsertGroup);
-
+            $result = $link->query($qInsertGroup);
 
 
-            return mysql_affected_rows();
+
+            return $result->affected_rows;
         }
     }
 
 // End: function add_group
-
     // MODIFY TEAM
 
     function modify_team($teamname, $teamlead, $status) {
@@ -352,7 +326,10 @@ class auth {
             return "Ungrouped team cannot be inactivated.";
         } else {
 
-            $connection = mysql_connect($this->HOST, $this->USERNAME, $this->PASSWORD);
+            $link = new mysqli($this->HOST, $this->USERNAME, $this->PASSWORD, $this->DBNAME);
+            if ($link->connect_error) {
+                die("Error al conectarse a la BD $dbname: " . $mysqli->connect_error);
+            }
 
 
 
@@ -361,9 +338,7 @@ class auth {
             //$userresult = mysql_db_query($this->DBNAME, $qUserStatus);
             // REVISED CODE
 
-            $SelectedDB = mysql_select_db($this->DBNAME);
-
-            $userresult = mysql_query($qUserStatus);
+            $userresult = $link - query($qUserStatus);
 
 
 
@@ -371,7 +346,7 @@ class auth {
             // $result = mysql_db_query($this->DBNAME, $qUpdate);
             // REVISED CODE
 
-            $result = mysql_query($qUpdate);
+            $result = $link->query($qUpdate);
 
 
 
@@ -380,7 +355,6 @@ class auth {
     }
 
 // End: function modify_team
-
     // DELETE TEAM
 
     function delete_team($teamname) {
@@ -402,15 +376,16 @@ class auth {
 
 
 
-        $connection = mysql_connect($this->HOST, $this->USERNAME, $this->PASSWORD);
+        $link = new mysqli($this->HOST, $this->USERNAME, $this->PASSWORD, $this->DBNAME);
+        if ($link->connect_error) {
+            die("Error al conectarse a la BD $dbname: " . $mysqli->connect_error);
+        }
 
         // OLD CODE - DO NOTE REMOVE
         // $result = mysql_db_query($this->DBNAME, $qUpdateUser);
         // REVISED CODE
 
-        $SelectedDB = mysql_select_db($this->DBNAME);
-
-        $result = mysql_query($qUpdateUser);
+        $result = $link->query($qUpdateUser);
 
 
 
@@ -418,11 +393,11 @@ class auth {
         // $result = mysql_db_query($this->DBNAME, $qDelete);
         // REVISED CODE
 
-        $result = mysql_query($qDelete);
+        $result = $link->query($qDelete);
 
 
 
-        return mysql_error();
+        return $link->error;
     }
 
 // End: function delete_team
