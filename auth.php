@@ -63,9 +63,9 @@ class auth {
 
         $Fec = strtotime($Fecha);
 
-        $FecDias = strtotime("-30 days", $Fec);   //Le quito 15 dias
+        //$FecDias = strtotime("-30 days", $Fec);   //Le quito 15 dias
 
-        $FecUlt = strtotime($row[feclave]);
+        //s$FecUlt = strtotime($row[feclave]);
 
         // CHECK IF THERE ARE RESULTS
         // Logic: If the number of rows of the resulting recordset is 0, that means that no
