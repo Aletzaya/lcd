@@ -5,7 +5,7 @@
   echo "Status ".$check['status'];
   echo "Nombre: ".$check['username'];
  */
-
+echo "Estamos en menu y en prueba para desarrollo";
 session_start();
 require("lib/lib.php");
 
