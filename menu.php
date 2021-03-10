@@ -13,8 +13,7 @@ include_once ("auth.php");
 include_once ("authconfig.php");
 include_once ("check.php");
 require ("config.php");
-/** @var type $_REQUEST */
-if ($_REQUEST[busca]) {  // Si trae algo entra y asigna los valores a session;
+if (isset($_REQUEST[busca])) {  // Si trae algo entra y asigna los valores a session;
     $_SESSION['cVar'] = $_REQUEST[busca];
 }
 
