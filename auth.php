@@ -57,11 +57,9 @@ class auth {
 
         $Upinto = $link->query("INSERT INTO logacceso (id,uname,team,level,fechacc,ipacc) VALUES ('$accesso[id]','$accesso[uname]','$accesso[team]','$accesso[level]',NOW(),'$ipaddress')");
 
+        $numrows = $result->num_rows();
 
-
-        $numrows = mysql_num_rows($result);
-
-        $row = mysql_fetch_array($result);
+        $row = $result->fetch_assoc();
 
         $Fec = strtotime($Fecha);
 
@@ -84,7 +82,7 @@ class auth {
             //	return 2;
         } else {
 
-            $Update = mysql_query($UpdateRecords);
+            $Update = $link->query($UpdateRecords);
 
             return $row;
         }
