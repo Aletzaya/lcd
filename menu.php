@@ -1,10 +1,10 @@
 <?php
-/*  
-echo "Nivel ".$check['level'];
-echo "grupo o sucursal".$check['team'];
-echo "Status ".$check['status'];
-echo "Nombre: ".$check['username'];
-*/
+/*
+  echo "Nivel ".$check['level'];
+  echo "grupo o sucursal".$check['team'];
+  echo "Status ".$check['status'];
+  echo "Nombre: ".$check['username'];
+ */
 
 session_start();
 require("lib/lib.php");
@@ -13,93 +13,87 @@ include_once ("auth.php");
 include_once ("authconfig.php");
 include_once ("check.php");
 require ("config.php");
+/** @var type $_REQUEST */
 if (isset($_REQUEST[busca])) {  // Si trae algo entra y asigna los valores a session;
-    $_SESSION['cVar']   = $_REQUEST[busca];    
+    $_SESSION['cVar'] = $_REQUEST[busca];
 }
-   
-if($_SESSION['cVarVal']=='Ini'){
 
-    $_SESSION['cVarVal']='';
-    
-    
-    setcookie ("TEAM", $check['team']);        //Sucursal
-    setcookie ("LEVEL", $check['level']);
-    
+if ($_SESSION['cVarVal'] == 'Ini') {
+
+    $_SESSION['cVarVal'] = '';
+
+
+    setcookie("TEAM", $check['team']);        //Sucursal
+    setcookie("LEVEL", $check['level']);
+
     //if($check['team']<>9){		// A que grupo pertenece osea es usuario restringido;
-        
-        //if($_SESSION['cVar']<>$check['team']){  header("Location: index.php?op=99");}
+    //if($_SESSION['cVar']<>$check['team']){  header("Location: index.php?op=99");}
     //}
-}	  
+}
 
 /*
-   if ( $check['team'] <> 'Admin' and $check['team']<>'Visor'){
+  if ( $check['team'] <> 'Admin' and $check['team']<>'Visor'){
 
-        echo 'No tienes acceso a esta pagina.';
+  echo 'No tienes acceso a esta pagina.';
 
-         exit();
+  exit();
 
-   }
+  }
 
-   
-   if(strlen($check['team'])==1 || $check['team']=='Admin' ){    //Si es una tienda o Admin cambio
-       $_SESSION['usr']='Admin';
-         print "<SCRIPT></SCRIPT>\n";
 
-   }
+  if(strlen($check['team'])==1 || $check['team']=='Admin' ){    //Si es una tienda o Admin cambio
+  $_SESSION['usr']='Admin';
+  print "<SCRIPT></SCRIPT>\n";
 
-    //   echo "Vlor de session :  $check['status']  ";
-*/
+  }
 
-  							//Parametros de colores;
+  //   echo "Vlor de session :  $check['status']  ";
+ */
 
-   //<p align="center"><img src="images/logo1.jpg" width="400" height="200"></p>
-
+//Parametros de colores;
+//<p align="center"><img src="images/logo1.jpg" width="400" height="200"></p>
 ?>
 
 <html>
-<head>
+    <head>
 
-<title><?php echo $Titulo;?></title>
+        <title><?php echo $Titulo; ?></title>
 
-</head>
+    </head>
 
-<?php 
+<?php
+echo "<body bgcolor='#FFFFFF' leftmargin='$MagenIzq' topmargin='$MargenAlt' marginwidth='$MargenIzq' marginheight='$MargenAlt'>";
 
-  echo "<body bgcolor='#FFFFFF' leftmargin='$MagenIzq' topmargin='$MargenAlt' marginwidth='$MargenIzq' marginheight='$MargenAlt'>";
+headymenu("Menu principal (inicio)", 1);
 
-  headymenu("Menu principal (inicio)",1);
-  
-  echo "<table border='0' width='100%' align='center' border=0 cellpadding=0 cellspacing=0>";
+echo "<table border='0' width='100%' align='center' border=0 cellpadding=0 cellspacing=0>";
 
-  echo "<tr><td height='280' align='center'>$Gfont ";
+echo "<tr><td height='280' align='center'>$Gfont ";
 
-  echo "<p align='center'><img src='lib/doctor.jpg' border=0></p>"; 
-  
-  echo "<p align='center'>$Gfont <b>".$_REQUEST[Msj]."</b></p>";
-    
-  if($_REQUEST[cMes] <> ''){
-  
-  		echo "<p align='center'>$Gfont|a href <b>".$_REQUEST[Msj]."</b></p>";
+echo "<p align='center'><img src='lib/doctor.jpg' border=0></p>";
 
-  		if($_REQUEST[cMes]<>''){
-  		
-  			echo "<p align='center'><a href=javascript:wingral('medconsolida.php?op=cc&cMes=$_REQUEST[cMes]')>Consolida la demanda de cliente por medico en el catalogo de medicos</a></p>";
-		  		
-  		}
-  
-   }
+echo "<p align='center'>$Gfont <b>" . $_REQUEST[Msj] . "</b></p>";
 
-  echo "</td></tr>";
-     
-  echo "<tr background='lib/prueba.jpg' height='80'>";
+if ($_REQUEST[cMes] <> '') {
 
-  echo "<td>&nbsp;</td>";
+    echo "<p align='center'>$Gfont|a href <b>" . $_REQUEST[Msj] . "</b></p>";
 
-  echo "</tr></table>";
+    if ($_REQUEST[cMes] <> '') {
 
+        echo "<p align='center'><a href=javascript:wingral('medconsolida.php?op=cc&cMes=$_REQUEST[cMes]')>Consolida la demanda de cliente por medico en el catalogo de medicos</a></p>";
+    }
+}
+
+echo "</td></tr>";
+
+echo "<tr background='lib/prueba.jpg' height='80'>";
+
+echo "<td>&nbsp;</td>";
+
+echo "</tr></table>";
 ?>
 
-<p>&nbsp;</p>
+    <p>&nbsp;</p>
 
 
 </body>
